@@ -6,8 +6,11 @@ from pole_emploi_module import JobOffersModule
 
 st.set_page_config(layout="wide")
 st.title("Aidez-moi à trouver moi un nom de page")
-url ='https://dataemploi.pole-emploi.fr/accueil/'
-st.write("[Data Pôle Emploi](url), permet de mieux connaitre le marché du travail notament les secteurs en tensions")
+url = "https://dataemploi.pole-emploi.fr/accueil/"
+st.write(
+    "[Data Pôle Emploi](url), permet de mieux connaitre le marché du travail notament les secteurs en tensions"
+)
+
 
 def main():
     col1, col2 = st.columns(2)
@@ -23,7 +26,7 @@ def main():
         with st.expander("Voir les codes régions"):
             st.dataframe(regions_df, use_container_width=True)
 
-    if st.button("Obtenir les Offres d'Emploi"):
+    if st.button("Valider"):
         try:
             module = JobOffersModule()
             offres_emploi = module.fetch_job_offers(rome, region)
@@ -31,9 +34,11 @@ def main():
             if not offres_emploi:
                 st.warning("Aucune offre d'emploi trouvée.")
             else:
-                st.success(f"{len(offres_emploi)} offres d'emploi trouvées.")
-                if len(offres_emploi) == 3000:
-                    st.warning("L'API ne renvoie que 3000 offres d'emploi.")
+                st.warning(
+                    "Des offres d'emploi ont été trouvées, mais attention l'API ne renvoie que 3000 offres d'emploi."
+                )
+                if len(offres_emploi) != 3000:
+                    st.success(f"{len(offres_emploi)} offres d'emploi trouvées.")
 
                 data = []
                 for offre in offres_emploi:
@@ -101,7 +106,7 @@ def main():
                         title="Répartition par type de contrat",
                     )
                     st.plotly_chart(fig, use_container_width=True)
-                   # st.dataframe(aggregate_par_contrat, use_container_width=True)
+                    # st.dataframe(aggregate_par_contrat, use_container_width=True)
 
                     st.write("Agrégation par nom de l'entreprise :")
                     aggregate_par_entreprise = (
