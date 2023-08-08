@@ -7,7 +7,7 @@ from pole_emploi_module import JobOffersModule
 st.set_page_config(layout="wide")
 st.title("Aidez-moi à trouver moi un nom de page")
 url ='https://dataemploi.pole-emploi.fr/accueil/'
-st.write("[Data Pôle Emploi](url), permet de connaitres notament les secteurs en tensions")
+st.write("[Data Pôle Emploi](url), permet de mieux connaitre le marché du travail notament les secteurs en tensions")
 
 def main():
     col1, col2 = st.columns(2)
