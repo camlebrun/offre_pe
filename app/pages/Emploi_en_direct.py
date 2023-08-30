@@ -1,44 +1,43 @@
+import token
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from scripts.module_offre import JobOffersModule
 
-from pole_emploi_module import JobOffersModule
 
-st.set_page_config(layout="wide")
-st.title("Aidez-moi à trouver moi un nom de page")
+st.set_page_config(layout="wide", page_title="Emploi en direct")
+st.markdown('<h1 style="text-align: center;">Emploi en direct</h1>', unsafe_allow_html=True)
 url = "https://dataemploi.pole-emploi.fr/accueil/"
 st.write(
-    "[Data Pôle Emploi](url), permet de mieux connaitre le marché du travail notament les secteurs en tensions"
+    "[Data Pôle Emploi](url), permet de mieux connaitre le marché du travail notamment les secteurs en tensions"
 )
-
 
 def main():
     col1, col2 = st.columns(2)
     with col1:
         rome = st.text_input("Entrez le code ROME :")
-        rome_df = pd.read_csv("rome.csv")
+        rome_df = pd.read_csv("data/regions.csv")
         with st.expander("Voir les codes ROME"):
             st.dataframe(rome_df, use_container_width=True)
 
     with col2:
         region = st.text_input("Entrez le code de la région :")
-        regions_df = pd.read_csv("regions.csv")
+        regions_df = pd.read_csv("data/rome.csv")
         with st.expander("Voir les codes régions"):
             st.dataframe(regions_df, use_container_width=True)
 
     if st.button("Valider"):
         try:
             module = JobOffersModule()
+            st.write("Access Token:", module.access_token)
             offres_emploi = module.fetch_job_offers(rome, region)
 
             if not offres_emploi:
-                st.warning("Aucune offre d'emploi trouvée.")
+                st.warning("Aucune offre d'emploi trouvée.", icon="warning")
             else:
-                st.warning(
-                    "Des offres d'emploi ont été trouvées, mais attention l'API ne renvoie que 3000 offres d'emploi."
-                )
-                if len(offres_emploi) != 3000:
-                    st.success(f"{len(offres_emploi)} offres d'emploi trouvées.")
+
+                if len(offres_emploi) == 3000:
+                    st.error("Le nombre d\'offres d\'emploi est limité à 3000.")
 
                 data = []
                 for offre in offres_emploi:
@@ -54,11 +53,11 @@ def main():
                     )
 
                 df = pd.DataFrame(data)
-                df.reset_index(drop=True, inplace=True)  # Réinitialiser l'index
+                df.reset_index(drop=True, inplace=True)  
                 col1, col2 = st.columns(2)
 
                 with col1:
-                    st.write("Agrégation par nombre de postes proposé dans l'annonce:")
+                    st.markdown("**Agrégation par nombre de postes proposé dans l'annonce:**")
                     aggregate_par_positions = (
                         df.groupby("Nombre de Postes")
                         .size()
@@ -72,7 +71,7 @@ def main():
                     )
                     st.dataframe(aggregate_par_positions, use_container_width=True)
 
-                    st.write("Agrégation par lieu :")
+                    st.markdown("**Agrégation par lieu :**")
                     aggregate_par_lieu = (
                         df.groupby("Lieu")
                         .size()
@@ -91,24 +90,7 @@ def main():
                     st.dataframe(aggregate_par_lieu, use_container_width=True)
 
                 with col2:
-                    st.write("Agrégation par Type de contrat :")
-                    aggregate_par_contrat = (
-                        df.groupby("Type de Contrat")
-                        .size()
-                        .reset_index(name="Count")
-                        .sort_values(by="Count", ascending=False)
-                        .reset_index(drop=True)
-                    )
-                    fig = px.pie(
-                        aggregate_par_contrat,
-                        values="Count",
-                        names="Type de Contrat",
-                        title="Répartition par type de contrat",
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
-                    # st.dataframe(aggregate_par_contrat, use_container_width=True)
-
-                    st.write("Agrégation par nom de l'entreprise :")
+                    st.markdown("**Agrégation par nom de l'entreprise :**")
                     aggregate_par_entreprise = (
                         df.groupby("Nom de l'entreprise")
                         .size()
@@ -124,10 +106,25 @@ def main():
 
                     st.dataframe(aggregate_par_entreprise, use_container_width=True)
 
+
+                aggregate_par_contrat = (
+                    df.groupby("Type de Contrat")
+                    .size()
+                    .reset_index(name="Count")
+                    .sort_values(by="Count", ascending=False)
+                    .reset_index(drop=True)
+                )
+                fig = px.pie(
+                    aggregate_par_contrat,
+                    values="Count",
+                    names="Type de Contrat",
+                    title="Répartition par type de contrat",
+                )
+                st.plotly_chart(fig, use_container_width=True)
                 st.write(
                     "Les codes ROME englobent des métiers proches, pour plus d'informations sur les offres d'emplois vous pouvez consulter le tableau ci-dessous."
                 )
-                st.write("Agrégation par nom de métiers :")
+                st.markdown("**Agrégation par nom de métiers :**")
                 aggregate_par_appellation = (
                     df.groupby("Appellation")
                     .size()

@@ -20,6 +20,7 @@ class JobOffersModule:
         response = requests.post(self.url, headers=self.headers, data=self.data)
         if response.status_code == 200:
             return response.json().get("access_token")
+            
         else:
             raise Exception(f"Error getting access token: {response.text}")
 
